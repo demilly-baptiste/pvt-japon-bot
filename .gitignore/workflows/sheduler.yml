@@ -28,8 +28,8 @@ jobs:
 
       # 4. Lance enfin ton script
       - name: Run script
-        env:
-          # Injection des secrets (clés API, etc.) pour qu'ils restent cachés
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-        run: python check_visa.py
+              env:
+                EMAIL_USER: ${{ secrets.EMAIL_USER }}
+                EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+                EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
+              run: python check_visa.py
