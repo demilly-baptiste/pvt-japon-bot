@@ -1,30 +1,36 @@
 import requests
 import os
-import sys
+import smtplib
+from email.message import EmailMessage
 
 # Configuration
 URL_AMBASSADE = "https://www.fr.emb-japan.go.jp/itpr_fr/v0002b.html"
 PHRASE_FERMETURE = "fermé jusqu’à nouvel ordre"
 
-# Récupération des secrets (configurés sur GitHub)
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+# Récupération des secrets
+EMAIL_USER = os.getenv("EMAIL_USER")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+EMAIL_RECEIVER = os.getenv("EMAIL_RECEIVER")
 
-def send_notification(message):
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("Erreur : Les secrets Telegram ne sont pas configurés.")
+def send_email(subject, body):
+    if not EMAIL_USER or not EMAIL_PASSWORD:
+        print("Erreur : Les identifiants email ne sont pas configurés.")
         return
 
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message,
-        "parse_mode": "Markdown"
-    }
+    msg = EmailMessage()
+    msg.set_content(body)
+    msg['Subject'] = subject
+    msg['From'] = EMAIL_USER
+    msg['To'] = EMAIL_RECEIVER
+
     try:
-        requests.post(url, json=payload)
+        # Connexion au serveur SMTP de Gmail (port 465 pour SSL)
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(EMAIL_USER, EMAIL_PASSWORD)
+            smtp.send_message(msg)
+        print("Email envoyé avec succès.")
     except Exception as e:
-        print(f"Erreur lors de l'envoi Telegram : {e}")
+        print(f"Erreur lors de l'envoi de l'email : {e}")
 
 def check_status():
     headers = {
@@ -34,21 +40,19 @@ def check_status():
     try:
         response = requests.get(URL_AMBASSADE, headers=headers, timeout=20)
         response.raise_for_status()
-        
-        # On force l'encodage en utf-8 pour éviter les problèmes avec les accents
         response.encoding = 'utf-8'
         html_content = response.text
 
         if PHRASE_FERMETURE in html_content:
             print("Le système est toujours fermé.")
         else:
-            print("ALERTE : La phrase de fermeture n'a pas été trouvée !")
-            send_notification("🚨 **PVT JAPON : Changement détecté !**\n\nLa phrase 'fermé jusqu’à nouvel ordre' a disparu de la page de l'ambassade.\n\nVérifie vite : " + URL_AMBASSADE)
+            print("ALERTE : Changement détecté !")
+            subject = "🚨 ALERTE PVT JAPON : Créneaux disponibles ?"
+            body = f"La phrase '{PHRASE_FERMETURE}' n'apparaît plus sur la page.\n\nVérifiez ici : {URL_AMBASSADE}"
+            send_email(subject, body)
 
     except Exception as e:
         print(f"Erreur lors du check : {e}")
-        # Optionnel : envoyer une notification en cas d'erreur technique du script
-        # send_notification(f"⚠️ Erreur script PVT : {e}")
 
 if __name__ == "__main__":
     check_status()
