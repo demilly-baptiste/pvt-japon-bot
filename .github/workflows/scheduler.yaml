@@ -1,0 +1,32 @@
+name: Surveillance PVT Japon
+
+on:
+  schedule:
+    # Rappel : GitHub utilise l'heure UTC. 
+    # 8h-18h en France correspond environ à 6h-16h UTC.
+    - cron: '*/15 6-16 * * 1-6'
+  workflow_dispatch: # C'est cette ligne qui crée le bouton de test manuel !
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Installation des dépendances
+        run: |
+          pip install -r requirements.txt
+
+      - name: Exécution du script
+        env:
+          # Ici on fait le pont entre vos "Secrets" GitHub et le script Python
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
+        run: python check_visa.py
