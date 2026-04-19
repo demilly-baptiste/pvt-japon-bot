@@ -3,7 +3,7 @@ name: Check Ambassade Cron
 on:
   schedule:
     # Ton cron : toutes les 15 min, de 8h à 18h, du lundi au samedi
-    - cron: '*/15 8-18 * * 1-6'
+    - cron: '*/15 6-16 * * 1-6'
   workflow_dispatch: # Ajoute un bouton "Play" manuel sur GitHub pour tester
 
 jobs:
