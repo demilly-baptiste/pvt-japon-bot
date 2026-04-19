@@ -33,12 +33,19 @@ def send_email(subject, body):
         print(f"Erreur lors de l'envoi de l'email : {e}")
 
 def check_status():
+    session = requests.Session()
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
     }
     
     try:
-        response = requests.get(URL_AMBASSADE, headers=headers, timeout=20)
+        # On fait une première requête sur la page d'accueil pour obtenir les cookies éventuels
+        session.get("https://www.fr.emb-japan.go.jp/", headers=headers, timeout=20)
+        
+        # Ensuite on va sur la page spécifique
+        response = session.get(URL_AMBASSADE, headers=headers, timeout=20)
         response.raise_for_status()
         response.encoding = 'utf-8'
         html_content = response.text
