@@ -45,6 +45,9 @@ def check_status():
 
         if PHRASE_FERMETURE in html_content:
             print("Le système est toujours fermé.")
+            subject = "Le système est toujours fermé."
+            body = f"La phrase '{PHRASE_FERMETURE}' apparaît encore sur la page.\n\nVérifiez ici : {URL_AMBASSADE}"
+            send_email(subject, body)
         else:
             print("ALERTE : Changement détecté !")
             subject = "🚨 ALERTE PVT JAPON : Créneaux disponibles ?"
